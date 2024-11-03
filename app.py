@@ -49,17 +49,28 @@ def wine_model_prediction():
         prediction = model.predict(new_wine_scaled)
 
         # Prepare result message
-        result = "Good Wine" if prediction[0] == 1 else "Bad Wine"
+        result = "Good Wine From Kiash Good one" if prediction[0] == 1 else "Bad Wine from Kiash oooh it's a bad one"
         phone_number = request.form['phone_number']
         message = f"Wine Quality Prediction: {result}"
 
         # Send SMS
-        response = sms.send(message, [phone_number])
-        
+        try:
+            response = sms.send(message, [phone_number])
+            sms_status = "SMS sent successfully!" if response['SMSMessageData']['Recipients'] else "Failed to send SMS."
+            
+            # Log the full response for debugging
+            print("SMS Response:", response)
+            
+        except Exception as sms_error:
+            sms_status = f"SMS Error: {sms_error}"
+            print("Error while sending SMS:", sms_error)
+
         # Display result on the dashboard and confirm SMS sent
-        return render_template('index.html', prediction=result, sms_response="SMS sent successfully!" if response else "Failed to send SMS.")
+        return render_template('index.html', prediction=result, sms_response=sms_status)
     
     except Exception as e:
+        # Capture general errors
+        print("Prediction Error:", e)
         return jsonify({'error': str(e)})
 
 if __name__ == '__main__':
